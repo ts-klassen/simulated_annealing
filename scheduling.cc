@@ -47,6 +47,9 @@ struct Scoring {
       cout << schedule.at(i) << endl;
     }
   }
+  vector<int> getSchedule() {
+    return schedule;
+  }
  private:
   void solve() {
     for (int i=0;i<schedule.size();i++) {
@@ -67,21 +70,48 @@ struct Solver {
  private:
   Data data;
   Scoring bestScore;
+  int limit, steps;
  public:
   Solver (Data dataInit) {
     data = dataInit;
-    findInitial();
+    limit = 1000;
+    steps = 0;
+    vector<int> schedule = findInitial();
+    for (int i=0;i<limit;i++)
+      neighbor(schedule);
     bestScore.print();
   }
-  void findInitial() {
+  vector<int> findInitial() {
     vector<int> schedule(data.D);
     for (int i=0;i<data.D;i++)
       schedule.at(i) = i%26 +1;
     bestScore = Scoring(data, schedule);
+    return schedule;
+  }
+  void neighbor (vector<int> &schedule) {
+    int i = rand()%data.D;
+    int j = rand()%data.D;
+    int iVal = schedule.at(i);
+    schedule.at(i) = schedule.at(j);
+    schedule.at(j) = iVal;
+    Scoring scoring(data, schedule);
+    if (scoring.getScore()>bestScore.getScore()) {
+      bestScore = scoring;
+    }
+    if (temperature()<((double)rand()/RAND_MAX)) {
+      schedule = bestScore.getSchedule();
+    }
+    steps++;
+  }
+  double temperature() {
+    if (steps<100) return 0.1;
+    if (steps<500) return 0.01;
+    return 0.001;
   }
 };
 
 int main() {
+  srand(0);
   Data data;
   cin >> data.D;
   for (int i=0;i<26;i++) {
